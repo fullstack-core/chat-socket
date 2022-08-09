@@ -57,10 +57,8 @@ const updateMessage = (e)=>{
 
 const removeMessage = (id) => {
   console.log(id);
-  socket.emit('removeMessage', {room: room.value, messageId: id}, (res) =>{
-      messages.value = res;
-      console.log(res);
-    // messages.value = messages.value.filter(message => message.id !== id);
+  socket.emit('removeMessage', {room: room.value, messageId: id}, (res) => {
+    messages.value = res;
   });
 }
 

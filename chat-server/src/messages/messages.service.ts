@@ -73,6 +73,18 @@ export class MessagesService {
       (element) => element.id === message['messageId'],
     );
 
-    return this.findAll(message['room']).splice(index, 1);
+    console.log('removed ', index);
+
+    this.rooms.forEach((element) => {
+      if (element.id === message['room']) {
+        element.messages.forEach((item) => {
+          if (item.id === message['messageId']) {
+            element.messages.splice(element.messages.indexOf(item), 1);
+          }
+        });
+      }
+    });
+
+    return this.findAll(message['room']);
   }
 }
