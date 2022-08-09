@@ -42,13 +42,26 @@ const sendMessage = ()=>{
   });
 }
 
-
 let timeout;
 const emitTyping = ()=>{
   socket.emit('typing', {room:room.value, isTyping: true});
   timeout = setTimeout(()=>{
     socket.emit('typing', {room: room.value, isTyping: false});
   }, 2000);
+}
+
+const updateMessage = (e)=>{
+  messageText.value = e.target.value;
+  socket.emit('typing', {room: room.value, name: name.value, isTyping: true});
+}
+
+const removeMessage = (id) => {
+  console.log(id);
+  socket.emit('removeMessage', {room: room.value, messageId: id}, (res) =>{
+      messages.value = res;
+      console.log(res);
+    // messages.value = messages.value.filter(message => message.id !== id);
+  });
 }
 
 </script> 
@@ -70,10 +83,12 @@ const emitTyping = ()=>{
     </div>
 
     <div class="chat-container" v-else>
-      <h1>Room: 1</h1>
+      <h1>Room: {{ room }}</h1>
       <div class="messages-container">
-        <div v-for="(message, i) in messages" :key="i">
-          [{{message.name}}]:{{message.text}}
+        <div v-for="(message, i) in messages" :key="i" class="msg">
+          <p>[{{message.name}}]: {{message.text}}</p>
+          <button @click="updateMessage">Edit</button>
+          <button @click="removeMessage(message.id)">Remove</button>
         </div>
       </div>
 
@@ -102,5 +117,13 @@ const emitTyping = ()=>{
 }
 .messages-container{
   flex: 1;
+}
+.msg{
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+button{
+  height: min-content;
 }
 </style>

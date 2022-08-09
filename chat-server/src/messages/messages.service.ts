@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
-import { MessageEntity } from './entities/message.entity';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class MessagesService {
@@ -10,20 +10,22 @@ export class MessagesService {
       id: 1,
       clientToUser: {},
       messages: [
-        {
-          name: 'John Doe',
-          text: 'Hello World',
-        },
+        // {
+        //   id: '1',
+        //   name: 'John Doe',
+        //   text: 'Hello World',
+        // },
       ],
     },
     {
       id: 2,
       clientToUser: {},
       messages: [
-        {
-          name: 'Max Mustermann',
-          text: 'Nice to meet you',
-        },
+        // {
+        //   id: '1',
+        //   name: 'Max Mustermann',
+        //   text: 'Nice to meet you',
+        // },
       ],
     },
   ];
@@ -48,6 +50,7 @@ export class MessagesService {
 
   create(room: string, createMessageDto: CreateMessageDto, clientId: string) {
     const message = {
+      id: uuid(),
       name: this.getClientName(room, clientId),
       text: createMessageDto.text,
     };
@@ -65,7 +68,11 @@ export class MessagesService {
     return `This action updates a #${id} message`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} message`;
+  async remove(message: string) {
+    const index = await this.findAll(message['room']).find(
+      (element) => element.id === message['messageId'],
+    );
+
+    return this.findAll(message['room']).splice(index, 1);
   }
 }

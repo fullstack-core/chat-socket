@@ -71,7 +71,7 @@ export class MessagesGateway {
   }
 
   @SubscribeMessage('removeMessage')
-  remove(@MessageBody() id: number) {
-    return this.messagesService.remove(id);
+  async remove(@MessageBody() message: string) {
+    return await this.messagesService.remove(message);
   }
 }
