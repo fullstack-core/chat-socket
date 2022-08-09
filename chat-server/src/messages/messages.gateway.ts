@@ -14,15 +14,30 @@ import { Socket } from 'socket.io';
 @WebSocketGateway({ cors: { origin: '*' } })
 export class MessagesGateway {
   @WebSocketServer() server: Server;
-
   constructor(private readonly messagesService: MessagesService) {}
+
+  @SubscribeMessage('join')
+  joinRoom(
+    @MessageBody('name') name: string,
+    @MessageBody('room') room: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    return this.messagesService.join(name, room, client.id);
+  }
+
+  @SubscribeMessage('findAllMessages')
+  findAll(@MessageBody('room') room: string) {
+    return this.messagesService.findAll(room);
+  }
 
   @SubscribeMessage('createMessage')
   async create(
+    @MessageBody('room') room: string,
     @MessageBody() createMessageDto: CreateMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
     const message = await this.messagesService.create(
+      room,
       createMessageDto,
       client.id,
     );
@@ -32,25 +47,13 @@ export class MessagesGateway {
     return message;
   }
 
-  @SubscribeMessage('findAllMessages')
-  findAll() {
-    return this.messagesService.findAll();
-  }
-
-  @SubscribeMessage('join')
-  joinRoom(
-    @MessageBody('name') name: string,
-    @ConnectedSocket() client: Socket,
-  ) {
-    return this.messagesService.identify(name, client.id);
-  }
-
   @SubscribeMessage('typing')
   async typing(
+    @MessageBody('room') room: string,
     @MessageBody('isTyping') isTyping: boolean,
     @ConnectedSocket() client: Socket,
   ) {
-    const name = this.messagesService.getClientName(client.id);
+    const name = this.messagesService.getClientName(room, client.id);
 
     client.broadcast.emit('typing', { name, isTyping });
   }

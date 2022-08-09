@@ -5,30 +5,57 @@ import { MessageEntity } from './entities/message.entity';
 
 @Injectable()
 export class MessagesService {
-  messages: MessageEntity[] = [{ name: 'John Doe', text: 'Hello World' }];
-  clientToUser = {};
+  rooms = [
+    {
+      id: 1,
+      clientToUser: {},
+      messages: [
+        {
+          name: 'John Doe',
+          text: 'Hello World',
+        },
+      ],
+    },
+    {
+      id: 2,
+      clientToUser: {},
+      messages: [
+        {
+          name: 'Max Mustermann',
+          text: 'Nice to meet you',
+        },
+      ],
+    },
+  ];
 
-  identify(name: string, clientId: string) {
-    this.clientToUser[clientId] = name;
-    return Object.values(this.clientToUser);
+  join(name: string, room: string, clientId: string) {
+    this.rooms.find((element) => element.id === +room).clientToUser[clientId] =
+      name;
+    return Object.values(
+      this.rooms.find((element) => element.id === +room).clientToUser,
+    );
   }
 
-  getClientName(clientId: string) {
-    return this.clientToUser[clientId];
+  findAll(room: string) {
+    return this.rooms.find((element) => element.id === +room).messages;
   }
 
-  create(createMessageDto: CreateMessageDto, clientId: string) {
+  getClientName(room: string, clientId: string) {
+    return this.rooms.find((element) => element.id === +room).clientToUser[
+      clientId
+    ];
+  }
+
+  create(room: string, createMessageDto: CreateMessageDto, clientId: string) {
     const message = {
-      name: this.clientToUser[clientId],
+      name: this.getClientName(room, clientId),
       text: createMessageDto.text,
     };
-    this.messages.push(message);
+    this.rooms.find((element) => element.id === +room).messages.push(message);
     return message;
   }
 
-  findAll() {
-    return this.messages;
-  }
+  //--------------------------------------------------
 
   findOne(id: number) {
     return `This action returns a #${id} message`;

@@ -8,10 +8,11 @@ const messages = ref([]);
 const messageText = ref('');
 const joined = ref(false);
 const name = ref('');
+const room = ref(1);
 const typingDisplay = ref('');
 
 onBeforeMount(()=>{
- socket.emit('findAllMessages', {}, (res)=>{
+ socket.emit('findAllMessages', {room: room.value}, (res)=>{
    messages.value = res;
  });
 
@@ -19,7 +20,7 @@ onBeforeMount(()=>{
    messages.value.push(message);
  });
 
- socket.on('typing', ({name, isTyping})=>{
+ socket.on('typing', ({room, name, isTyping})=>{
    if(isTyping){
     typingDisplay.value = name + ' is typing...';
    }
@@ -30,13 +31,13 @@ onBeforeMount(()=>{
 });
 
 const join = () =>{
-  socket.emit('join', {name: name.value}, ()=>{
+  socket.emit('join', {name: name.value, room: room.value}, ()=>{
     joined.value = true;
   });
 }
 
 const sendMessage = ()=>{
-  socket.emit('createMessage', {text: messageText.value}, () => {
+  socket.emit('createMessage', {room: room.value, text: messageText.value}, () => {
     messageText.value = '';
   });
 }
@@ -44,9 +45,9 @@ const sendMessage = ()=>{
 
 let timeout;
 const emitTyping = ()=>{
-  socket.emit('typing', {isTyping: true});
+  socket.emit('typing', {room:room.value, isTyping: true});
   timeout = setTimeout(()=>{
-    socket.emit('typing', {isTyping: false});
+    socket.emit('typing', {room: room.value, isTyping: false});
   }, 2000);
 }
 
@@ -56,13 +57,20 @@ const emitTyping = ()=>{
   <div class="chat">
     <div v-if="!joined">
       <form @submit.prevent="join">
-        <label>What's your name?</label>
-        <input v-model="name" type="text" placeholder="Enter your name">
+        <div>
+          <label>What your room?</label>
+          <input v-model="room" type="text" placeholder="Enter your room id">
+        </div>
+        <div>
+          <label>What's your name?</label>
+          <input v-model="name" type="text" placeholder="Enter your name">
+        </div>
         <button type="submit">Join</button>
       </form>
     </div>
 
     <div class="chat-container" v-else>
+      <h1>Room: 1</h1>
       <div class="messages-container">
         <div v-for="(message, i) in messages" :key="i">
           [{{message.name}}]:{{message.text}}
